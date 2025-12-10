@@ -2,8 +2,16 @@ const { chromium } = require("playwright-core");
 const path = require("path");
 
 async function scrapeMsport(code) {
-  // This will always be correct with Puppeteer's installer
-  const chromePath = path.join(__dirname, "..", ".local-chrome", "chrome", "linux-64", "chrome");
+  // Correct Chrome path from Render logs
+  const chromePath = path.join(
+    __dirname,
+    "..",
+    ".local-chrome",
+    "chrome",
+    "linux-143.0.7499.42",
+    "chrome-linux64",
+    "chrome"
+  );
 
   const browser = await chromium.launch({
     headless: true,
@@ -11,12 +19,14 @@ async function scrapeMsport(code) {
     args: [
       "--no-sandbox",
       "--disable-dev-shm-usage",
-      "--disable-gpu"
+      "--disable-gpu",
+      "--disable-setuid-sandbox"
     ]
   });
 
   const page = await browser.newPage();
   const url = `https://www.msport.com/ng/?code=${code}&from=share_betslip_wa_app`;
+
   await page.goto(url, { waitUntil: "networkidle" });
 
   const bets = await page.evaluate(() => {
