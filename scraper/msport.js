@@ -1,38 +1,33 @@
-const { chromium } = require('playwright');
+const { chromium } = require("playwright-core");
+const path = require("path");
 
 async function scrapeMsport(code) {
+  const chromePath = path.join(__dirname, ".cache", "chrome", "linux-*/chrome");
+
   const browser = await chromium.launch({
     headless: true,
+    executablePath: chromePath,
     args: [
       "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-accelerated-2d-canvas",
       "--disable-gpu",
-      "--no-zygote",
-      "--single-process"
+      "--disable-dev-shm-usage"
     ]
   });
 
   const page = await browser.newPage();
-
-  const url = `https://www.msport.com/ng/?code=${code}&from=share_betslip_wa_app`;
-
-  await page.goto(url, { waitUntil: 'networkidle' });
+  const url = `https://www.msport.com/ng/?code=${code}`;
+  await page.goto(url, { waitUntil: "networkidle" });
 
   const bets = await page.evaluate(() => {
     const output = [];
-
-    const items = document.querySelectorAll(".coupon-item");
-    items.forEach(el => {
+    document.querySelectorAll(".coupon-item").forEach(el => {
       output.push({
-        match: el.querySelector(".match-name")?.innerText?.trim() || "",
-        market: el.querySelector(".market-name")?.innerText?.trim() || "",
-        selection: el.querySelector(".market-option")?.innerText?.trim() || "",
-        odd: el.querySelector(".odd-num")?.innerText?.trim() || "",
+        match: el.querySelector(".match-name")?.innerText ?? null,
+        market: el.querySelector(".market-name")?.innerText ?? null,
+        selection: el.querySelector(".market-option")?.innerText ?? null,
+        odd: el.querySelector(".odd-num")?.innerText ?? null,
       });
     });
-
     return output;
   });
 
