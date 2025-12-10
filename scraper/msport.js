@@ -2,33 +2,34 @@ const { chromium } = require("playwright-core");
 const path = require("path");
 
 async function scrapeMsport(code) {
-  const chromePath = path.join(__dirname, ".cache", "chrome", "linux-*/chrome");
+  // This will always be correct with Puppeteer's installer
+  const chromePath = path.join(__dirname, "..", ".local-chrome", "chrome", "linux-64", "chrome");
 
   const browser = await chromium.launch({
     headless: true,
     executablePath: chromePath,
     args: [
       "--no-sandbox",
-      "--disable-gpu",
-      "--disable-dev-shm-usage"
+      "--disable-dev-shm-usage",
+      "--disable-gpu"
     ]
   });
 
   const page = await browser.newPage();
-  const url = `https://www.msport.com/ng/?code=${code}`;
+  const url = `https://www.msport.com/ng/?code=${code}&from=share_betslip_wa_app`;
   await page.goto(url, { waitUntil: "networkidle" });
 
   const bets = await page.evaluate(() => {
-    const output = [];
+    const items = [];
     document.querySelectorAll(".coupon-item").forEach(el => {
-      output.push({
-        match: el.querySelector(".match-name")?.innerText ?? null,
-        market: el.querySelector(".market-name")?.innerText ?? null,
-        selection: el.querySelector(".market-option")?.innerText ?? null,
-        odd: el.querySelector(".odd-num")?.innerText ?? null,
+      items.push({
+        match: el.querySelector(".match-name")?.innerText?.trim() || null,
+        market: el.querySelector(".market-name")?.innerText?.trim() || null,
+        selection: el.querySelector(".market-option")?.innerText?.trim() || null,
+        odd: el.querySelector(".odd-num")?.innerText?.trim() || null,
       });
     });
-    return output;
+    return items;
   });
 
   await browser.close();
