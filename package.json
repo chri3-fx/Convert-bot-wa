@@ -1,14 +1,14 @@
 {
   "name": "msport-converter",
   "version": "1.0.0",
-  "description": "MSport bet code converter API",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "render-build": "npx playwright install chromium"
+    "build-browser": "npx @puppeteer/browsers install chrome@latest --path=./.cache"
   },
   "dependencies": {
     "express": "^5.2.1",
-    "playwright": "^1.57.0"
+    "playwright-core": "^1.57.0",
+    "@puppeteer/browsers": "^2.2.3"
   }
 }
