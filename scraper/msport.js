@@ -3,6 +3,15 @@ const { chromium } = require('playwright');
 async function scrapeMsport(code) {
   const browser = await chromium.launch({
     headless: true,
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-gpu",
+      "--disable-dev-shm-usage",
+      "--no-zygote",
+      "--disable-software-rasterizer",
+      "--single-process"
+    ]
   });
 
   const page = await browser.newPage();
@@ -11,14 +20,16 @@ async function scrapeMsport(code) {
 
   await page.goto(url, { waitUntil: 'networkidle' });
 
+  // Scrape coupon items
   const bets = await page.evaluate(() => {
     const items = [];
     document.querySelectorAll(".coupon-item").forEach(el => {
-      const match = el.querySelector(".match-name")?.innerText?.trim();
-      const market = el.querySelector(".market-name")?.innerText?.trim();
-      const selection = el.querySelector(".market-option")?.innerText?.trim();
-      const odd = el.querySelector(".odd-num")?.innerText?.trim();
-      items.push({ match, market, selection, odd });
+      items.push({
+        match: el.querySelector(".match-name")?.innerText?.trim() || null,
+        market: el.querySelector(".market-name")?.innerText?.trim() || null,
+        selection: el.querySelector(".market-option")?.innerText?.trim() || null,
+        odd: el.querySelector(".odd-num")?.innerText?.trim() || null,
+      });
     });
     return items;
   });
